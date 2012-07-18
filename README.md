@@ -4,4 +4,8 @@ Simple jQuery plugin to create combobox functionality
 	
 ## Usage
 	
-$('select').jqCombo();
+    $('select').jqCombo();
+
+## Demo
+
+http://nabble.nl/demo/jqCombo/index.html
