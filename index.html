@@ -15,13 +15,26 @@
 		})
 	</script>
 	
+	<style>
+		body { font-family: sans-serif; }
+	</style>
+	
 </head>
 <body>
 	
 	<h1>jqCombo - jQuery combobox plugin</h1>
 	
 	<p>
-		Simple jQuery plugin to create combobox functionality
+		Simple jQuery plugin to create combobox / autocomplete functionality<br/>
+		Only a very lightweight plugin which uses native browser input elements,
+		no custom panels or jQuery UI stuff.
+	</p>
+	
+	<p>
+		However, please note that this plugin requires some browser sniffing and
+		tricky positioning of the <code>INPUT</code> element over the <code>SELECT</code> element.<br/>
+		Using this plugin on styled <code>SELECT</code> elements might not work
+		as expected.
 	</p>
 	
 	<h2>Usage</h2>
