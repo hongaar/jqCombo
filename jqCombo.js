@@ -6,12 +6,12 @@
 	*
 	*/
 	
-	// Plugin defaultss
+	/**
+	 * Configuration
+	 */
 	var defaults = {
 		// No options yet
 	};
-	
-	var options;
 	
 	var config = {
 		ignoreKeys: [			
@@ -26,25 +26,41 @@
 		]
 	};
 	
+	/**
+	 * Some variables
+	 */
+	var _options;
+	var _keypressCounter = 0;
+	
 	// Object of plugin methods	
 	var methods = {
 		init: function(o) {
-			options = $.extend(defaults, o);			
+			// Not on mobile devices
+			if (_isMobile().any()) {
+				return false;
+			}
+			
+			// Extend options with defaults
+			_options = $.extend(defaults, o);
+			
+			// The Loop
 			return this.each(function() {
-				var $this = $(this);
+				var $select = $(this);
 				
 				// Adds the textbox
-				var $input = _inputAfter($this);
+				var $input = _inputAfter($select);
 				
 				// Watch the select for changes and update input right away
-				_watchChanges($this, $input);
+				_watchChanges($select, $input);
+				
+				// Keypress counter and repeater neutralizer
+				_initKeypressCounter($input);
 				
 				// Autocompletes the input when typing
-				_autocompleteInput($this, $input);
+				_autocompleteInput($select, $input);
 				
 				// Selects all text on focus in input element
-				_selectallOnFocus($input);
-				
+				_selectallOnFocus($input);				
 			});
 		}
 	};
@@ -86,6 +102,7 @@
 		});
 	}
 	
+	// Get position correction for input based on browsers
 	function _positionCorrection() {
 		var offset = {
 			top		: -2,
@@ -93,38 +110,25 @@
 			width	: 18,
 			height	: 4
 		};
+		// TODO: browser correction
 		if ($.browser.msie) {
-			offset.left = 5;
+			//offset.left = 5;
 		}
 		return offset;
 	}
 	
+	// Watch the select box for changes and updated input
 	function _watchChanges($select, $input) {
 		$select.on('change', function() {
 			$input.val($select.find('option:selected').text());
 		});
 	}
 	
+	// The beating heart: autocomplete function
 	function _autocompleteInput($select, $input) {
-		// Keypress counter and repeater neutralizer
-		var i = 0;
-		var lastKeycode;
-				
-		$input.on('keydown', function(e) {
-			// Keypress counter and repeater neutralizer
-			if (e.keyCode != lastKeycode) {
-				lastKeycode = e.keyCode;
-				i++;
-			}
-		});
-		
-		$input.on('keyup', function(e) {
-			// Keypress counter and repeater neutralizer
-			i--;
-			lastKeycode = null;
-			
+		$input.on('keyup', function(e) {			
 			// Ignoring subsequent keypresses to prevents quirks
-			if (i > 0) {
+			if (_keypressCounter > 0) {
 				return;
 			}
 			
@@ -134,7 +138,7 @@
 			}
 			
 			// Resets the notfound color
-			_resetColor($input);
+			_resetNotfound($input);
 			
 			// Gets the current input text
 			var typedText = $input.val();
@@ -160,18 +164,38 @@
 				$select.val('');
 				
 				// Set notfound color on input
-				_notfoundColor($input);
+				_markNotfound($input);
 			}			
 		});
 	}
 	
-	function _resetColor($input) {
+	// Keypress counter and repeater neutralizer
+	function _initKeypressCounter($input) {
+		var lastKeycode = null;
+		$input.on('keydown', function(e) {
+			// Keypress counter and repeater neutralizer
+			if (e.keyCode != lastKeycode) {
+				lastKeycode = e.keyCode;
+				_keypressCounter++;
+			}
+		});
+		
+		$input.on('keyup', function(e) {
+			// Keypress counter and repeater neutralizer
+			_keypressCounter--;
+			lastKeycode = null;
+		});		
+	}
+	
+	// Resets the notfound color
+	function _resetNotfound($input) {
 		$input.css({
 			color: 'black'
 		});
 	}
-	
-	function _notfoundColor($input) {
+		
+	// Marks an input as having no matches in the select
+	function _markNotfound($input) {
 		$input.css({
 			color: 'red'
 		});
@@ -195,10 +219,33 @@
         field.focus();
     }       
 	
+	// Selects all input gets focus by click only
+	// TODO: rewrite for use with tabstop too
 	function _selectallOnFocus($input) {
-		$input.on('click', function() {
+		$input.on('click', function(e) {
 			$(this).select();
 		});
+	}
+	
+	// @source http://www.abeautifulsite.net/blog/2011/11/detecting-mobile-devices-with-javascript/
+	function _isMobile() {
+		return {
+			android: function() {
+				return navigator.userAgent.match(/Android/i) ? true : false;
+			},
+			blackberry: function() {
+				return navigator.userAgent.match(/BlackBerry/i) ? true : false;
+			},
+			ios: function() {
+				return navigator.userAgent.match(/iPhone|iPad|iPod/i) ? true : false;
+			},
+			windows: function() {
+				return navigator.userAgent.match(/IEMobile/i) ? true : false;
+			},
+			any: function() {
+				return (this.android() || this.blackberry() || this.ios() || this.windows());
+			}
+		}
 	}
 	
 	$.fn.jqCombo = function(method) {
