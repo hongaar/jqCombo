@@ -36,7 +36,7 @@
 	var methods = {
 		init: function(o) {
 			// Not on mobile devices
-			if (_isMobile().any()) {
+			if (_isMobile().any) {
 				return false;
 			}
 			
@@ -95,26 +95,73 @@
 	function _positionInput($select, $input) {
 		var offset = _positionCorrection();
 		$input.css({
-			top		: $select.position().top - offset.top,
-			left	: $select.position().left - offset.left,
-			width	: $select.width() - offset.width,
-			height	: $select.height() - offset.height
+			top		: $select.position().top + offset.top,
+			left	: $select.position().left + offset.left,
+			width	: $select.width() + offset.width,
+			height	: $select.height() + offset.height
 		});
 	}
 	
 	// Get position correction for input based on browsers
+	// Based on Windows 7 / Mac OS X Lion and latest browser versions
 	function _positionCorrection() {
-		var offset = {
-			top		: -2,
+		// jQuery.browser is deprecated, so we may want to rewrite this
+		// functionality ourselves, as we can't rely on feature detection here
+		var defaultOffset = {
+			top		: 0,
 			left	: 0,
-			width	: 18,
-			height	: 4
+			width	: -22,
+			height	: -4
 		};
-		// TODO: browser correction
-		if ($.browser.msie) {
-			//offset.left = 5;
+		var offset = {};
+		var browser = _browser();
+		var os = _os();
+		if (browser.chrome) {
+			offset = {
+				top		: 2,
+				left	: 2,
+				width	: -20
+			}
 		}
-		return offset;
+		if (browser.safari || (browser.chrome && os.mac)) { // also for chrome on mac
+			offset = {
+				top		: 2,
+				left	: 2,
+				width	: 4,
+				height	: -2		
+			}
+			if (os.mac) {
+				offset.width = -25;
+				offset.height = -6;
+			}
+		}
+		if (browser.msie) {
+		}		
+		if (browser.mozilla) {
+			if (os.mac) {
+				offset = {
+					height: -6,
+					width: 0
+				}
+			}
+		}
+		if (browser.opera) {
+			offset = {
+				top		: 0,
+				left	: 0,
+				width	: -16,
+				height	: 0				
+			}
+			if (os.mac) {
+				offset = {
+					top		: 1,
+					left	: 2,
+					width	: -22,
+					height	: -3
+				}
+			}
+		}
+		return $.extend(defaultOffset, offset);
 	}
 	
 	// Watch the select box for changes and updated input
@@ -232,20 +279,58 @@
 		return {
 			android: function() {
 				return navigator.userAgent.match(/Android/i) ? true : false;
-			},
+			}(),
 			blackberry: function() {
 				return navigator.userAgent.match(/BlackBerry/i) ? true : false;
-			},
+			}(),
 			ios: function() {
 				return navigator.userAgent.match(/iPhone|iPad|iPod/i) ? true : false;
-			},
+			}(),
 			windows: function() {
 				return navigator.userAgent.match(/IEMobile/i) ? true : false;
-			},
+			}(),
 			any: function() {
-				return (this.android() || this.blackberry() || this.ios() || this.windows());
-			}
+				return navigator.userAgent.match(/Android|BlackBerry|iPhone|iPad|iPod|IEMobile/i) ? true : false;
+			}()
 		}
+	}
+		
+	function _os() {
+		return {
+			mac: function() {
+				return navigator.userAgent.match(/Mac/i) ? true : false;
+			}(),
+			windows: function() {
+				return navigator.userAgent.match(/Win/i) ? true : false;
+			}()
+		}		
+	}
+	
+	// @source https://github.com/louisremi/jquery.browser/blob/master/jquery.browser.js
+	function _browser() {
+		var ua = navigator.userAgent.toLowerCase(),
+			match,
+			i = 0,
+			
+			// Useragent RegExp
+			rbrowsers = [
+				/(chrome)[\/]([\w.]+)/,
+				/(safari)[\/]([\w.]+)/,
+				/(opera)(?:.*version)?[ \/]([\w.]+)/,
+				/(msie) ([\w.]+)/,
+				/(mozilla)(?:.*? rv:([\w.]+))?/
+			];
+			
+		var browser = {};
+		do {
+			if ( (match = rbrowsers[i].exec( ua )) && match[1] ) {
+				browser[ match[1] ] = true;
+				browser.version = match[2] || "0";
+				break;
+			}
+		} while (i++ < rbrowsers.length)
+		
+		return browser;
 	}
 	
 	$.fn.jqCombo = function(method) {
