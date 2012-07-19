@@ -23,7 +23,7 @@
 		lookbackKeys: [
 			16, // shift
 			17, // ctrl
-			18, // alt
+			18 // alt
 		],
 		noselectionKeys: [
 			8, // backspace
