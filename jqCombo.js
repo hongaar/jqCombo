@@ -20,6 +20,11 @@
 			37, // left
 			39 // right			
 		],
+		lookbackKeys: [
+			16, // shift
+			17, // ctrl
+			18, // alt
+		],
 		noselectionKeys: [
 			8, // backspace
 			46 // delete
@@ -173,14 +178,29 @@
 	
 	// The beating heart: autocomplete function
 	function _autocompleteInput($select, $input) {
+		var lastKeycode = null;
 		$input.on('keyup', function(e) {			
 			// Ignoring subsequent keypresses to prevents quirks
+			console.log(_keypressCounter);
+			
+			// Sore last pressed key for lookback
+			if ($.inArray(e.keyCode, config.lookbackKeys) == -1) {
+				lastKeycode = e.keyCode;
+			}
+			
+			// Wait for all keys to be released
 			if (_keypressCounter > 0) {
 				return;
 			}
 			
-			// Ignore this key?
-			if ($.inArray(e.keyCode, config.ignoreKeys) >= 0) {
+			// Ignore the current or lookback key?
+			if (
+				$.inArray(e.keyCode, config.ignoreKeys) >= 0 ||
+				(
+					$.inArray(e.keyCode, config.lookbackKeys) >= 0 &&
+					$.inArray(lastKeycode, config.ignoreKeys) >= 0
+				)
+			) {
 				return;
 			}
 			
@@ -217,21 +237,26 @@
 	}
 	
 	// Keypress counter and repeater neutralizer
+	// Used in autocompleter to only continue if 
+	// user finished pressing any keys
 	function _initKeypressCounter($input) {
-		var lastKeycode = null;
+		var keysPressed = [];
 		$input.on('keydown', function(e) {
-			// Keypress counter and repeater neutralizer
-			if (e.keyCode != lastKeycode) {
-				lastKeycode = e.keyCode;
-				_keypressCounter++;
+			// Store currently pressed keys
+			if ($.inArray(e.keyCode, keysPressed) == -1) {
+				keysPressed.push(e.keyCode);
 			}
+			_keypressCounter = keysPressed.length;
 		});
 		
-		$input.on('keyup', function(e) {
-			// Keypress counter and repeater neutralizer
-			_keypressCounter--;
-			lastKeycode = null;
-		});		
+		$input.on('keyup', function(e) {			
+			// Remove currently pressed key from store
+			var index = $.inArray(e.keyCode, keysPressed);
+			if (index >= 0) {
+				keysPressed.splice(index, 1);
+			}
+			_keypressCounter = keysPressed.length;
+		});	
 	}
 	
 	// Resets the notfound color
