@@ -87,6 +87,7 @@
 	};
 	
 	var keypressCounter = 0;
+	var $keyListener = $(document);
 	
 	// Object of plugin methods	
 	var methods = {
@@ -158,6 +159,7 @@
 		$select.next('select.jqcombo-clone').remove();
 		$select.next('input.jqcombo-input').remove();
 		$select.off('.jqcombo');
+		$keyListener.unbind('.jqcombo');
 	}
 	
 	// Adds a input element after the textbox and positions it
@@ -420,16 +422,14 @@
 	// user finished pressing any keys
 	function _initKeypressCounter() {
 		var keysPressed = [];
-		var $target = $(document);
-		$target.bind('keydown.jqcombo', function(e) {
+		$keyListener.bind('keydown.jqcombo', function(e) {
 			// Store currently pressed keys
 			if ($.inArray(e.keyCode, keysPressed) == -1) {
 				keysPressed.push(e.keyCode);
 			}
 			keypressCounter = keysPressed.length;
-		});
-		
-		$target.bind('keyup.jqcombo', function(e) {			
+		});		
+		$keyListener.bind('keyup.jqcombo', function(e) {			
 			// Remove currently pressed key from store
 			var index = $.inArray(e.keyCode, keysPressed);
 			if (index >= 0) {
