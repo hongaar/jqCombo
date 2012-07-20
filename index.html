@@ -2,9 +2,12 @@
 <html>
 <head>
 	<meta charset="utf-8">
-	<title>jqCombo demo</title>
 	<meta name="description" content="">
 	<meta name="author" content="">
+	
+	<title>jqCombo - jQuery combobox / autocomplete plugin</title>
+	
+	<link rel="shortcut icon" type="image/x-icon" href="favicon.ico" />
 	
 	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>	
 	<script type="text/javascript" src='jquery.jqCombo.js'></script>	
@@ -12,16 +15,22 @@
 	<script type="text/javascript">
 		$(document).ready(function() {
 			$('select[name=countries-default]').jqCombo();
-			$('select[name=countries-noexpand]').jqCombo({expandOnFocus: false, notfoundCss: { backgroundColor: 'red', color: 'white' }});
+			$('select[name=countries-noexpand]').jqCombo({expandOnFocus: false, notfoundCss: { backgroundColor: 'orange' }});
 			$('select[name=countries-customsize]').jqCombo({expandSize: 5});
 		})
 	</script>
 	
 	<style>
-		body		{ font-family: sans-serif; overflow-y: scroll; }
-		code, pre	{ background-color: #ddd; padding: 1px; }
+		body		{ font-family: sans-serif; font-size: 0.9em; overflow-y: scroll; }	
+		#wrapper	{ max-width: 500px; margin: 40px auto; position: relative; left: 150px; }
+		h1			{ font-size: 2em; }
+		h2			{ margin-top: 30px; font-size: 1.5em; font-weight: normal; }
+		a			{ color: red; }
+		code, pre	{ background-color: rgb(220, 235, 241); padding: 1px; }
 		pre			{ padding: 5px; }
 		select		{ margin-bottom: 30px; }
+		dt			{ font-weight: bold; }
+		em			{ display: block; height: 0px; position: relative; left: -420px; top: 4px; width: 400px; text-align: right; }
 	</style>
 	
 </head>
@@ -29,13 +38,13 @@
 	
 	<a href="https://github.com/hongaar/jqCombo"><img style="position: absolute; top: 0; left: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_left_red_aa0000.png" alt="Fork me on GitHub"></a>
 	
-	<div style='max-width: 700px; margin: 10px auto;'>
+	<div id='wrapper'>
 	
-		<h1>jqCombo - jQuery combobox plugin</h1>
+		<h1>jqCombo<br/>combobox / autocomplete</h1>
 
 		<p>
 			Simple jQuery plugin to create combobox / autocomplete functionality<br/>
-			Only a very lightweight plugin which uses a native browser <code>INPUT</code> element,
+			Lightweight plugin which uses only a native browser <code>INPUT</code> element,
 			no custom panels or jQuery UI stuff.
 		</p>
 
@@ -51,30 +60,9 @@
 			On IE6 and mobile devices it will just show the <code>SELECT</code> element
 		</p>
 
-		<h2>Usage</h2>
-
-		<pre>
-// Install jqCombo on selected elements
-$('select').jqCombo();
-
-// Remove jqCombo from selected elements
-$('select').jqCombo('clear');
-</pre>
-		
-		<h2>Options</h2>
-
-		<pre>
-// These options are the defaults
-$('select').jqCombo({
-    expandOnFocus : true,
-    expandSize    : 10,
-    notfoundCss   : { color: 'red' }
-});
-</pre>
-
 		<h2>Example</h2>
 		
-		<p>With default options</p>
+		<em>With default options</em>
 
 		<select name='countries-default'>
 			<option value="" selected="selected">Type or select country</option> 
@@ -319,10 +307,10 @@ $('select').jqCombo({
 			<option value="Zimbabwe">Zimbabwe</option>
 		</select>
 		
-		<p>
-			With <code>expandOnFocus</code> set to <code>false</code><br/>
-			and <code>notfoundCss</code> set to <code>{ backgroundColor: 'red', color: 'white' }</code>
-		</p>
+		<em>
+			With <code>expandOnFocus: false</code> and<br/>
+			<code>notfoundCss: { backgroundColor: 'orange' }</code>
+		</em>
 
 		<select name='countries-noexpand'>
 			<option value="" selected="selected">Type or select country</option> 
@@ -567,7 +555,7 @@ $('select').jqCombo({
 			<option value="Zimbabwe">Zimbabwe</option>
 		</select>
 		
-		<p>With <code>expandSize</code> set to <code>5</code></p>
+		<em>With <code>expandSize</code> set to <code>5</code></em>
 
 		<select name='countries-customsize'>
 			<option value="" selected="selected">Type or select country</option> 
@@ -812,12 +800,43 @@ $('select').jqCombo({
 			<option value="Zimbabwe">Zimbabwe</option>
 		</select>
 		
-		<h2>Download</h2>
+		<h2>Usage</h2>
+
+		<pre>
+// Install jqCombo on selected elements
+$('select').jqCombo();
+
+// Remove jqCombo from selected elements
+$('select').jqCombo('clear');
+</pre>
+		
+		<h2>Options</h2>
+
+		<pre>
+// These options are the defaults
+$('select').jqCombo({
+    expandOnFocus : true,
+    expandSize    : 10,
+    notfoundCss   : { color: 'red' }
+});
+</pre>
+
+		<h2>Download v0.1</h2>
 		
 		<p>
-			<img src="http://planetozh.com/projects/famfamfam-icon-explorer/icons/script_save.png" style="vertical-align: middle;" width="16" height="16" />
-			<a href="https://raw.github.com/hongaar/jqCombo/master/jquery.jqCombo.min.js">jquery.jqCombo.min.js</a>
+			<img src="http://planetozh.com/projects/famfamfam-icon-explorer/icons/script_code.png" style="vertical-align: middle;" width="16" height="16" />
+			<a href="https://raw.github.com/hongaar/jqCombo/v0.1/jquery.jqCombo.min.js">jquery.jqCombo.min.js</a><br/>
+			<img src="http://planetozh.com/projects/famfamfam-icon-explorer/icons/page_white_compressed.png" style="vertical-align: middle;" width="16" height="16" />
+			<a href="https://github.com/hongaar/jqCombo/zipball/v0.1">source code as zip archive</a>
+			
 		</p>
+		
+		<h2>What's new</h2>
+		
+		<dl>
+			<dt>v0.1</dt>
+			<dd>First release</dd>
+		</dl>
 	
 	</div>
 		
