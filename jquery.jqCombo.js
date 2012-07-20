@@ -28,6 +28,9 @@
 		down: [
 			40 // down
 		],
+		enter: [
+			13 // enter
+		],
 		lookback: [
 			16, // shift
 			17, // ctrl
@@ -293,7 +296,7 @@
 			focusCss = {
 				position: 'absolute',
 				left	: $select.position().left,
-				top		: $select.position().top,
+				top		: $select.position().top + $select.height() + 5,
 				zIndex	: 1
 			};
 		}).resize();		
@@ -309,7 +312,7 @@
 		$clone.removeAttr('id name');
 		
 		// Hide clone from flow for now
-		$clone.css('visibility', 'hidden').hide();
+		$clone.css({ visibility: 'hidden' }).hide();
 		
 		// Add clone class so we can target it in _cleanup()
 		$clone.removeClass('jqcombo').addClass('jqcombo-clone');
@@ -324,7 +327,7 @@
 				$select.attr('size', size);
 				$select.css(focusCss);
 				$input.css('z-index', 2);
-				$clone.show();
+				$clone.css({ display: 'inline-block' });
 			}, 0);
 		});
 		

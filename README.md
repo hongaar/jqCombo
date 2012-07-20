@@ -11,6 +11,9 @@ tricky positioning of the `INPUT` element over the `SELECT` element.
 Using this plugin on styled `SELECT` elements might not work
 as expected.
 
+Tested with: Chrome 20, IE7+, Firefox 13, Safari 5.1, Opera 12.
+On IE6 and mobile devices it will just show the `SELECT` element
+
 ## Usage
 	
     $('select').jqCombo();
