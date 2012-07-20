@@ -7,53 +7,59 @@
 	*/
 	
 	/**
-	 * Configuration
+	 * Global variables
 	 */
 	var defaults = {
-		// No options yet
+		 expandOnFocus	: true,
+		 expandSize		: 10,
+		 notfoundCss	: {color: 'red'}
 	};
 	
-	var config = {
-		ignoreKeys: [			
+	var keys = {
+		ignore: [			
 			35, // end
 			36, // home
 			37, // left
 			39 // right			
 		],
-		lookbackKeys: [
+		lookback: [
 			16, // shift
 			17, // ctrl
 			18 // alt
 		],
-		noselectionKeys: [
+		noselection: [
 			8, // backspace
 			46 // delete
 		]
 	};
 	
-	/**
-	 * Some variables
-	 */
-	var _options;
-	var _keypressCounter = 0;
+	var keypressCounter = 0;
 	
 	// Object of plugin methods	
 	var methods = {
 		init: function(o) {
-			// Not on mobile devices
+			/**
+			 * Instance variables
+			 */						
+			var _options = $.extend({}, defaults, o);
+						
+			// Ignore mobile devices
 			if (_isMobile().any) {
 				return false;
 			}
 			
-			// Extend options with defaults
-			_options = $.extend(defaults, o);
+			// Cleanup
+			_cleanup(this);			
 			
 			// The Loop
 			return this.each(function() {
-				var $select = $(this);
+				var $select = $(this);				
 				
 				// Adds the textbox
 				var $input = _inputAfter($select);
+				
+				// Disable tab on select elements
+				_disableTabstop($select);
 				
 				// Watch the select for changes and update input right away
 				_watchChanges($select, $input);
@@ -62,10 +68,15 @@
 				_initKeypressCounter($input);
 				
 				// Autocompletes the input when typing
-				_autocompleteInput($select, $input);
+				_autocompleteInput($select, $input, _options.notfoundCss);
+				
+				// Expand on focus?
+				if (_options.expandOnFocus) {
+					_expandOnFocus($select, $input, _options.expandSize);
+				}
 				
 				// Selects all text on focus in input element
-				_selectallOnFocus($input);				
+				_selectallOnClick($input);
 			});
 		}
 	};
@@ -73,6 +84,17 @@
 	/**
 	 * Private methods
 	 */
+	
+	function _disableTabstop($select) {
+		$select.attr('tabindex', '-1');
+	}
+	
+	// If $().jqCombo() is called twice, clean up previous init
+	function _cleanup($select) {
+		$select.next('select.jqcombo-clone').remove();
+		$select.next('input.jqcombo').remove();
+		$select.off('.jqcombo');
+	}
 	
 	// Adds a input element after the textbox and positions it
 	function _inputAfter($select) {
@@ -82,6 +104,9 @@
 		$input.css({
 			position: 'absolute'
 		});
+		
+		// Save class so we can remove later if needed
+		$input.addClass('jqcombo');
 		
 		// Position relative to select element
 		_positionInput($select, $input);
@@ -171,48 +196,48 @@
 	
 	// Watch the select box for changes and updated input
 	function _watchChanges($select, $input) {
-		$select.on('change', function() {
+		$select.on('change.jqcombo', function() {
 			$input.val($select.find('option:selected').text());
 		});
 	}
 	
 	// The beating heart: autocomplete function
-	function _autocompleteInput($select, $input) {
+	function _autocompleteInput($select, $input, notfoundCss) {
 		var lastKeycode = null;
-		$input.on('keyup', function(e) {			
-			// Ignoring subsequent keypresses to prevents quirks
-			console.log(_keypressCounter);
-			
+		var origInputCss = _origCss($input, notfoundCss);
+		
+		$input.on('keyup.jqcombo', function(e) {
 			// Sore last pressed key for lookback
-			if ($.inArray(e.keyCode, config.lookbackKeys) == -1) {
+			if ($.inArray(e.keyCode, keys.lookback) == -1) {
 				lastKeycode = e.keyCode;
 			}
 			
+			// Select all on tab
+			if (e.keyCode === 9 ||
+				($.inArray(e.keyCode, keys.lookback) >= 0 && lastKeycode === 9)) {
+				$input.select();
+				return;
+			}
+			
 			// Wait for all keys to be released
-			if (_keypressCounter > 0) {
+			if (keypressCounter > 0) {
 				return;
 			}
 			
 			// Ignore the current or lookback key?
-			if (
-				$.inArray(e.keyCode, config.ignoreKeys) >= 0 ||
-				(
-					$.inArray(e.keyCode, config.lookbackKeys) >= 0 &&
-					$.inArray(lastKeycode, config.ignoreKeys) >= 0
-				)
-			) {
+			if ($.inArray(e.keyCode, keys.ignore) >= 0 ||
+				($.inArray(e.keyCode, keys.lookback) >= 0 && $.inArray(lastKeycode, keys.ignore) >= 0)) {
 				return;
 			}
 			
 			// Resets the notfound color
-			_resetNotfound($input);
+			$input.css(origInputCss);
 			
 			// Gets the current input text
 			var typedText = $input.val();
 			
 			// Find an option containing our text (case-insensitive)
-			// TODO: escape text
-			var $match = $select.find('option:startswithi(\'' + typedText + '\'):eq(0)');
+			var $match = $select.find('option:startswithi("' + typedText + '"):eq(0)');
 			var matchedText = $match.text();
 			
 			// Do we have a match?
@@ -221,7 +246,7 @@
 				$select.val($match.val());
 				
 				// Make selection if not in noselectionKeys list
-				if ($.inArray(e.keyCode, config.noselectionKeys) == -1) {
+				if ($.inArray(e.keyCode, keys.noselection) == -1) {
 					$input.val(matchedText);
 					_createSelection($input, typedText.length, matchedText.length)
 				}				
@@ -231,9 +256,78 @@
 				$select.val('');
 				
 				// Set notfound color on input
-				_markNotfound($input);
+				$input.css(notfoundCss);
 			}			
 		});
+	}
+	
+	// Expand selectbox on input focus, collapse on input blur
+	function _expandOnFocus($select, $input, size) {
+		// Set styles for $select at focus
+		var focusCss = {
+			position: 'absolute',
+			left	: $select.position().left,
+			top		: $select.position().top,
+			zIndex	: 1
+		};
+		
+		// Save original settings to restore with blur
+		var origSize = $select.attr('size') || 0;
+		var origCss = _origCss($select, focusCss);
+		
+		// Create clone of select element to retain flow on absolute positioning
+		var $clone = $select.clone();
+		
+		// Remove name/id attributes on clone to prevent issues with form submission, labels, etc
+		$clone.removeAttr('id name');
+		
+		// Hide clone from flow for now
+		$clone.css('visibility', 'hidden').hide();
+		
+		// Add clone class so we can target it in _cleanup()
+		$clone.addClass('jqcombo-clone');
+		
+		// Add to DOM
+		$select.after($clone);
+		
+		// Expand
+		$input.on('focus.jqcombo', function() {
+			// Asynchronous to allow collapse invoked by $select.blur to run first
+			setTimeout(function() {
+				$select.attr('size', size);
+				$select.css(focusCss);
+				$input.css('z-index', 2);
+				$clone.show();
+			}, 0);
+		});
+		
+		// Cancel collapse invoked by $input.blur
+		$select.on('focus.jqcombo', function() {
+			if (blurTimer) {
+				clearTimeout(blurTimer);
+			}
+		});
+		
+		// Timer to allow focus event on select to cancel collapse
+		var blurTimer;
+		
+		// Collapse
+		var collapse = function(e) {
+			// Asynchronous to allow focus event $select to cancel collapse
+			blurTimer = setTimeout(function() {
+				$select.attr('size', origSize);
+				$select.css(origCss);
+				$input.css('z-index', 'auto');
+				$clone.hide();
+				blurTimer = null;
+			}, 0);
+		}
+		
+		// Focus away from $input
+		$input.on('blur.jqcombo', collapse);
+		
+		// Focus away from (expanded) $select
+		$select.on('blur.jqcombo', collapse);
 	}
 	
 	// Keypress counter and repeater neutralizer
@@ -241,36 +335,30 @@
 	// user finished pressing any keys
 	function _initKeypressCounter($input) {
 		var keysPressed = [];
-		$input.on('keydown', function(e) {
+		$input.on('keydown.jqcombo', function(e) {
 			// Store currently pressed keys
 			if ($.inArray(e.keyCode, keysPressed) == -1) {
 				keysPressed.push(e.keyCode);
 			}
-			_keypressCounter = keysPressed.length;
+			keypressCounter = keysPressed.length;
 		});
 		
-		$input.on('keyup', function(e) {			
+		$input.on('keyup.jqcombo', function(e) {			
 			// Remove currently pressed key from store
 			var index = $.inArray(e.keyCode, keysPressed);
 			if (index >= 0) {
 				keysPressed.splice(index, 1);
 			}
-			_keypressCounter = keysPressed.length;
+			keypressCounter = keysPressed.length;
 		});	
 	}
-	
-	// Resets the notfound color
-	function _resetNotfound($input) {
-		$input.css({
-			color: 'black'
-		});
-	}
 		
-	// Marks an input as having no matches in the select
-	function _markNotfound($input) {
-		$input.css({
-			color: 'red'
-		});
+	function _origCss($element, cssKeys) {
+		var ret = {};
+		for (var i in cssKeys) {
+			ret[i] = $element.css(i);
+		}
+		return ret;
 	}
 	
 	// @source http://stackoverflow.com/a/646662/938297
@@ -292,9 +380,8 @@
     }       
 	
 	// Selects all input gets focus by click only
-	// TODO: rewrite for use with tabstop too
-	function _selectallOnFocus($input) {
-		$input.on('click', function(e) {
+	function _selectallOnClick($input) {
+		$input.on('click.jqcombo', function(e) {
 			$(this).select();
 		});
 	}
@@ -359,7 +446,6 @@
 	}
 	
 	$.fn.jqCombo = function(method) {
-    
 		// Method calling logic
 		if ( methods[method] ) {
 			return methods[method].apply(this, Array.prototype.slice.call(arguments, 1));
