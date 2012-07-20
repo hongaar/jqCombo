@@ -3,7 +3,50 @@
 	
 	/**
 	* @version 0.1
-	*
+	* @author Joram van den Boezem
+	* @source https://github.com/hongaar/jqCombo
+	* 
+	* Simple jQuery plugin to create combobox / autocomplete functionality
+	* 
+	* Only a very lightweight plugin which uses a native browser `INPUT` element,
+	* no custom panels or jQuery UI stuff.
+	* 
+	* However, please note that this plugin requires some browser sniffing and
+	* tricky positioning of the `INPUT` element over the `SELECT` element. Using
+	* this plugin on styled `SELECT` elements might not work as expected.
+	* 
+	* Tested with: Chrome 20, IE7+, Firefox 13, Safari 5.1, Opera 12.
+	* On IE6 and mobile devices it will just show the `SELECT` element
+	* 	
+	* 
+	* 
+	* UNLICENSE:
+	* 
+	* This is free and unencumbered software released into the public domain.
+	* 
+	* Anyone is free to copy, modify, publish, use, compile, sell, or
+	* distribute this software, either in source code form or as a compiled
+	* binary, for any purpose, commercial or non-commercial, and by any
+	* means.
+	* 
+	* In jurisdictions that recognize copyright laws, the author or authors
+	* of this software dedicate any and all copyright interest in the
+	* software to the public domain. We make this dedication for the benefit
+	* of the public at large and to the detriment of our heirs and
+	* successors. We intend this dedication to be an overt act of
+	* relinquishment in perpetuity of all present and future rights to this
+	* software under copyright law.
+	* 
+	* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+	* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+	* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+	* IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+	* OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+	* ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+	* OTHER DEALINGS IN THE SOFTWARE.
+	* 
+	* For more information, please refer to <http://unlicense.org/>
+	* 
 	*/
 	
 	/**
@@ -57,7 +100,7 @@
 				return false;
 			}
 			
-			// Cleanup
+			// Clear elements
 			_cleanup(this);			
 			
 			// The Loop
@@ -93,6 +136,11 @@
 				// Selects all text on focus in input element
 				_selectallOnClick($input);
 			});
+		},
+		
+		clear: function() {
+			// Clear elements
+			_cleanup(this);
 		}
 	};
 	
@@ -394,20 +442,20 @@
 	// @source http://stackoverflow.com/a/646662/938297
 	function _createSelection($field, start, end) {
 		var field = $field[0];
-        if (field.createTextRange) {
-            var selRange = field.createTextRange();
-            selRange.collapse(true);
-            selRange.moveStart('character', start);
-            selRange.moveEnd('character', end);
-            selRange.select();
-        } else if (field.setSelectionRange) {
-            field.setSelectionRange(start, end);
-        } else if (field.selectionStart) {
-            field.selectionStart = start;
-            field.selectionEnd = end;
-        }
-        field.focus();
-    }       
+		if (field.createTextRange) {
+			var selRange = field.createTextRange();
+			selRange.collapse(true);
+			selRange.moveStart('character', start);
+			selRange.moveEnd('character', end);
+			selRange.select();
+		} else if (field.setSelectionRange) {
+			field.setSelectionRange(start, end);
+		} else if (field.selectionStart) {
+			field.selectionStart = start;
+			field.selectionEnd = end;
+		}
+		field.focus();
+	}       
 	
 	// Selects all input gets focus by click only
 	function _selectallOnClick($input) {
@@ -436,7 +484,7 @@
 			}()
 		}
 	}
-		
+	
 	function _os() {
 		return {
 			mac: function() {
@@ -475,13 +523,16 @@
 		return browser;
 	}
 	
+	// Register the plugin on the jQuery namespace
 	$.fn.jqCombo = function(method) {
-		// Method calling logic
 		if ( methods[method] ) {
+			// Plugin method explicitly called
 			return methods[method].apply(this, Array.prototype.slice.call(arguments, 1));
 		} else if ( typeof method === 'object' || ! method ) {
+			// Default method: init
 			return methods.init.apply(this, arguments);
 		} else {
+			// Method not found
 			$.error('Method ' +  method + ' does not exist on jQuery.jqCombo');
 			return false;
 		}
