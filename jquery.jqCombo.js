@@ -22,6 +22,12 @@
 			37, // left
 			39 // right			
 		],
+		up: [
+			38 // up
+		],
+		down: [
+			40 // down
+		],
 		lookback: [
 			16, // shift
 			17, // ctrl
@@ -219,6 +225,19 @@
 				return;
 			}
 			
+			// Arrow navigation
+			if ($.inArray(e.keyCode, keys.down) >= 0) {
+				var v = $select.find('option:selected').next().val();	
+				$select.val(v);
+				$input.val(v).select();
+				return;
+			} else if ($.inArray(e.keyCode, keys.up) >= 0) {
+				var v = $select.find('option:selected').prev().val();	
+				$select.val(v);
+				$input.val(v).select();
+				return;
+			}
+			
 			// Wait for all keys to be released
 			if (keypressCounter > 0) {
 				return;
@@ -327,7 +346,7 @@
 		$input.on('blur.jqcombo', collapse);
 		
 		// Focus away from (expanded) $select
-		$select.on('blur.jqcombo', collapse);
+		$select.on('blur.jqcombo click.jqcombo', collapse);
 	}
 	
 	// Keypress counter and repeater neutralizer
