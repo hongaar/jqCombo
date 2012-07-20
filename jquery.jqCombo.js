@@ -59,10 +59,16 @@
 			
 			// The Loop
 			return this.each(function() {
-				var $select = $(this);				
+				var $select = $(this);
+				
+				// Adds jqcombo class to $select
+				$select.addClass('jqcombo');
 				
 				// Adds the textbox
 				var $input = _inputAfter($select);
+				
+				// Position relative to $select
+				_positionInput($select, $input);
 				
 				// Disable tab on select elements
 				_disableTabstop($select);
@@ -98,7 +104,7 @@
 	// If $().jqCombo() is called twice, clean up previous init
 	function _cleanup($select) {
 		$select.next('select.jqcombo-clone').remove();
-		$select.next('input.jqcombo').remove();
+		$select.next('input.jqcombo-input').remove();
 		$select.off('.jqcombo');
 	}
 	
@@ -112,11 +118,8 @@
 		});
 		
 		// Save class so we can remove later if needed
-		$input.addClass('jqcombo');
-		
-		// Position relative to select element
-		_positionInput($select, $input);
-		
+		$input.addClass('jqcombo-input');
+				
 		// Set text value to select value
 		$input.val($select.find('option:selected').text());
 		
@@ -130,12 +133,14 @@
 	// Positions the input element
 	function _positionInput($select, $input) {
 		var offset = _positionCorrection();
-		$input.css({
-			top		: $select.position().top + offset.top,
-			left	: $select.position().left + offset.left,
-			width	: $select.width() + offset.width,
-			height	: $select.height() + offset.height
-		});
+		$(window).resize(function() {
+			$input.css({
+				top		: $select.position().top + offset.top,
+				left	: $select.position().left + offset.left,
+				width	: $select.width() + offset.width,
+				height	: $select.height() + offset.height
+			});
+		}).resize();
 	}
 	
 	// Get position correction for input based on browsers
@@ -227,14 +232,14 @@
 			
 			// Arrow navigation
 			if ($.inArray(e.keyCode, keys.down) >= 0) {
-				var v = $select.find('option:selected').next().val();	
-				$select.val(v);
-				$input.val(v).select();
+				var o = $select.find('option:selected').next();	
+				$select.val(o.val());
+				$input.val(o.text()).select();
 				return;
 			} else if ($.inArray(e.keyCode, keys.up) >= 0) {
-				var v = $select.find('option:selected').prev().val();	
-				$select.val(v);
-				$input.val(v).select();
+				var o = $select.find('option:selected').prev();	
+				$select.val(o.val());
+				$input.val(o.text()).select();
 				return;
 			}
 			
@@ -282,13 +287,16 @@
 	
 	// Expand selectbox on input focus, collapse on input blur
 	function _expandOnFocus($select, $input, size) {
-		// Set styles for $select at focus
-		var focusCss = {
-			position: 'absolute',
-			left	: $select.position().left,
-			top		: $select.position().top,
-			zIndex	: 1
-		};
+		// Set styles for $select at focus, update on window resize
+		var focusCss;
+		$(window).resize(function() {
+			focusCss = {
+				position: 'absolute',
+				left	: $select.position().left,
+				top		: $select.position().top,
+				zIndex	: 1
+			};
+		}).resize();		
 		
 		// Save original settings to restore with blur
 		var origSize = $select.attr('size') || 0;
@@ -304,7 +312,7 @@
 		$clone.css('visibility', 'hidden').hide();
 		
 		// Add clone class so we can target it in _cleanup()
-		$clone.addClass('jqcombo-clone');
+		$clone.removeClass('jqcombo').addClass('jqcombo-clone');
 		
 		// Add to DOM
 		$select.after($clone);
